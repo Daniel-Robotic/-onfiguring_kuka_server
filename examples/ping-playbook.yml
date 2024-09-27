@@ -1,6 +1,0 @@
----
-- name: Ping all user
-  hosts: demo
-  tasks:
-    - name: Ping
-      ping:
