@@ -1,0 +1,182 @@
+---
+- name: Установка ROS2 на Ubuntu
+  hosts: demo
+  become: yes
+  # TODO: Вынести переменные в отдельный файл
+  vars:
+    - ros_distro: ""
+    - main_user: ros
+    - main_dir: ros2_ws
+
+  tasks:
+
+    - name: Получение версии Ubuntu
+      command: lsb_release -sc
+      register: ubuntu_version
+
+    - name: Получение архитектуры 
+      command: dpkg --print-architecture
+      register: architecture
+
+    - name: Получение версии ROS2 в зависимоти от версии Ubuntu
+      block:
+        - name: Выбор версии ROS2 в зависимости от версии Ubuntu
+          set_fact:
+            ros_distro: |
+              {% if ubuntu_version.stdout == 'bionic' %}
+                dashing
+              {% elif ubuntu_version.stdout == 'focal' %}
+                foxy
+              {% elif ubuntu_version.stdout == 'jammy' %}
+                humble
+              {% elif ubuntu_version.stdout == 'numbat' %}
+                jazzy
+              {% endif %}
+          
+        - name: Очистка полученной информации  
+          set_fact:
+            ros_distro: "{{ ros_distro | trim }}"
+
+        - name: Проверка на выбранную версию
+          fail:
+            msg: "Для вашей версии Ubuntu: {{ ubuntu_version.stdout }} небыла найдена нужная версия ROS2: {{ ros_distro }}"
+          when: ros_distro == ""
+          
+        - name: Информирование пользователя
+          debug:
+            msg: "Для вашей версии Ubuntu: {{ ubuntu_version.stdout }} автоматически выбрана версия ROS2: {{ ros_distro }}"
+
+    - name: Установка локали системы
+      block:
+        - name: Проверка локали
+          command: locale
+          register: current_locale
+
+        - name: Определение, является ли текущая локаль UTF-8
+          set_fact:
+            is_utf8: "{{ 'UTF-8' in current_locale.stdout }}"
+
+        - name: Обновление apt пакетов
+          apt:
+            update_cache: yes
+          when: not is_utf8
+
+        - name: Установка пакета locales
+          apt:
+            name: locales
+            state: present
+          when: not is_utf8
+
+        - name: Генерация en_US.UTF-8 локали
+          command: locale-gen en_US en_US.UTF-8
+          when: not is_utf8
+
+        - name: Обновление настроек локали
+          command: update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8
+          when: not is_utf8
+
+        - name: Экспортирование переменной среды LANG
+          shell: echo "export LANG=en_US.UTF-8" >> /etc/profile.d/lang.sh
+          args:
+            executable: /bin/bash
+          when: not is_utf8
+
+    - name: Добавления зависимостей ROS2
+      block:
+        - name: Установка пакета software-properties-common
+          apt:
+            name: software-properties-common
+            state: present
+
+        - name: Добавление universe
+          apt_repository:
+            repo: "deb http://us.archive.ubuntu.com/ubuntu/ {{ ubuntu_version.stdout }} main universe"
+            state: present
+
+        - name: Обновление пакетов
+          apt:
+            update_cache: yes
+
+        - name: Установка curl
+          apt:
+            name: curl
+            state: present
+
+        - name: Установка набора ключей ROS2
+          get_url:
+            url: https://raw.githubusercontent.com/ros/rosdistro/master/ros.key
+            dest: /usr/share/keyrings/ros-archive-keyring.gpg
+            mode: '0644'
+          register: download_result
+
+        - name: Убеждаемся что файл ключей загружен
+          stat:
+            path: /usr/share/keyrings/ros-archive-keyring.gpg
+          register: keyring_stat
+
+        - name: Подтверждение загрузки
+          fail:
+            msg: "Не удалось загрузить файл набора ключей ROS."
+          when: not keyring_stat.stat.exists
+
+        - name: Добавление репозитория ROS 2 в список источников
+          lineinfile:
+            path: /etc/apt/sources.list.d/ros2.list
+            line: "deb [arch={{ architecture.stdout }} signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu {{ ubuntu_version.stdout }} main"
+            create: yes
+
+    - name: Установка ROS2 пакета
+      block:
+        - name: Обновление пакетов
+          apt:
+            update_cache: yes
+
+        - name: Обновление системы
+          apt:
+            upgrade: dist
+
+        - name: Установка ROS2 {{ ros_distro }} Desktop версии
+          apt:
+            name:
+              - ros-{{ ros_distro }}-desktop
+              - python3-argcomplete
+
+
+        - name: Установка инструментов разработчика
+          apt:
+            name: ros-dev-tools
+
+    # TODO: Добавить скачивание образа с github и сделать выбор, создавание нового проекта или скачать уже имеющийся с github
+    - name: Конфигурирования ROS2 {{ ros_distro }}
+      block:
+        - name: Создание директории для работы с ROS2 {{ ros_distro }}
+          file:
+            path: "/home/{{ main_user }}/{{ main_dir }}"
+            state: directory
+            mode: "0755"
+            owner: "{{ main_user }}"
+            group: "{{ main_user }}"
+
+        - name: Запуск colcon build внутри работей области ROS2 {{ ros_distro }}
+          shell: colcon build
+          args:
+            executable: /bin/bash
+            chdir: /home/{{ main_user }}/{{ main_dir }}
+
+        - name: Добавление alias в .bashrc
+          lineinfile:  
+            path: "/home/{{ main_user }}/.bashrc"
+            line: |
+              # Custom alias
+              alias ubash='source /home/{{ main_user }}/.bashrc'
+              alias foxglove='ros2 launch rosbridge_server rosbridge_websocket_launch.xml'
+
+        - name: Добавление зависимостей ROS2 {{ ros_distro }}
+          lineinfile:  
+            path: "/home/{{ main_user }}/.bashrc"
+            line: |
+            
+              # Source files
+              source /usr/share/colcon_argcomplete/hook/colcon-argcomplete.bash
+              source /opt/ros/{{ ros_distro }}/setup.bash
+              source /home/ros/{{ main_dir }}/install/setup.sh
