@@ -76,5 +76,13 @@
           user:
             user: "{{ USER.stdout }}"
             group: docker
+
+        - name: Перезапуск демона docker
+          systemd:
+            name: docker
+            state: restarted
+
       become: yes
+
+
 
