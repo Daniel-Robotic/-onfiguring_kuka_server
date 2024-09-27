@@ -1,0 +1,20 @@
+---
+- name: Сборка Docker-Compose с последующим запуском
+  hosts: [jetson_nx]
+  become: yes
+  vars: 
+    - main_user: user
+    - main_dir: ros2_calibration_ws
+    - docker_compose_file: "/home/{{ main_user }}/{{ main_dir }}/docker-compose.yaml"
+    - ansible_python_interpreter: /usr/bin/python3 
+  tasks:
+    - block:
+
+      - name: Запуск Docker-Compose
+        command: docker compose -f {{ docker_compose_file }} up -d
+        args:
+          executable: /bin/bash
+
+      always:
+        - name: "Удаление ненужных дублирующих образов"
+          command: docker image prune -f

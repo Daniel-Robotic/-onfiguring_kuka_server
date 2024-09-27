@@ -1,0 +1,13 @@
+---
+- name: user
+  hosts: demo  # Какие хсоты будут использовать
+  vars_files:  #  Подключение файла с переменными
+    - ./vars.yml 
+  tasks:
+    - name: Create user
+      # vars:   # Объявление переменных, могу задаваться, как для все PlayBook, так и отдельной компоненты 
+        # user: ros
+      user:
+        name: "{{ user  }}"
+        state: present
+      become: true

@@ -1,6 +1,6 @@
 ---
 - name: Установка ROS2 на Ubuntu
-  hosts: demo
+  hosts: server
   become: yes
   # TODO: Вынести переменные в отдельный файл
   vars:
