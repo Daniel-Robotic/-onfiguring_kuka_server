@@ -1,0 +1,59 @@
+# В зависимости от версии CUDA измените версию
+FROM nvidia/cuda:12.4.1-runtime-ubuntu22.04
+
+ENV TZ=Asia/Vladivostok
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
+# Устанавливаем необходимые пакеты
+RUN apt-get update && apt-get install -y \
+    python3-pip \
+    python3-dev \
+    libgl1-mesa-glx \
+    libglib2.0-0 \
+    libssl-dev \
+    libusb-1.0-0-dev \ 
+    libudev-dev \ 
+    pkg-config \
+    libgtk-3-dev \
+    git \ 
+    wget \ 
+    cmake \
+    build-essential \
+    libglfw3-dev \ 
+    libgl1-mesa-dev \ 
+    libglu1-mesa-dev \ 
+    at \
+    && rm -rf /var/lib/apt/lists/*
+
+# Устанавливаем Python и pip
+RUN pip3 install --upgrade pip
+
+# Устанавливаем библиотеки для искусственного интеллекта
+RUN pip3 install \
+    numpy \
+    pandas \
+    scikit-learn \
+    tensorflow-gpu \
+    torch \
+    torchvision \
+    torchaudio \
+    pytorch-lightning \
+    torchmetrics \
+    opencv-contrib-python \
+    pyrealsense2 \
+    jupyter
+
+# Устанавливаем Jupyter Server
+RUN jupyter notebook --generate-config
+
+# Создаем рабочую директорию
+WORKDIR /workspace
+
+# Копируем файлы конфигурации Jupyter
+COPY jupyter_notebook_config.py /root/.jupyter/jupyter_notebook_config.py
+
+# Открываем порты для Jupyter Server
+EXPOSE 8888
+
+# Запускаем Jupyter Server
+CMD ["jupyter", "notebook"]

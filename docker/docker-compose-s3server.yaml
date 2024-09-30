@@ -1,0 +1,102 @@
+services:
+  minio:
+    image: minio/minio:latest
+    container_name: minio
+    restart: unless-stopped
+    env_file:
+      - ./env/minio.env
+    networks:
+      s3network:
+        ipv4_address: 172.45.15.2
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    command: server /data --console-address ":9001"
+
+  label_studio:
+    stdin_open: true
+    tty: true
+    image: heartexlabs/label-studio:latest
+    container_name: label_studio
+    restart: unless-stopped
+    env_file:
+      - ./env/label_studio.env
+    networks:
+      s3network:
+        ipv4_address: 172.45.15.3
+    ports:
+      - "8080:8080"
+    volumes:
+      - label_studio:/label-studio/data
+    depends_on:
+      - minio
+      - postgres
+
+  postgres:
+    image: pgautoupgrade/pgautoupgrade:13-alpine
+    container_name: label_studio_postgres
+    restart: unless-stopped
+    env_file:
+      - ./env/postgres.env
+    networks:
+      s3network:
+        ipv4_address: 172.45.15.4
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  ai-dev:
+    container_name: ai-dev
+    build:
+      context: .
+      dockerfile: DL_Dockerfile
+    runtime: nvidia
+    ports:
+      - "8081:8888"
+    volumes:
+      - ai_dev_folder:/workspace
+    networks:
+      s3network:
+        ipv4_address: 172.45.15.5
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+    depends_on:
+      - minio
+      - postgres
+      - label_studio
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+networks:
+  s3network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.45.15.0/24
+          gateway: 172.45.15.1
+
+volumes:
+  minio_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /mnt/bigdata_disk/minio_data
+  ai_dev_folder:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /mnt/bigdata_disk/ai-dev
+  pgdata:
+  label_studio:
+
