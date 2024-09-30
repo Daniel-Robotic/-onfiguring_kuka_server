@@ -1,0 +1,41 @@
+<!DOCTYPE html SYSTEM "about:legacy-compat">
+<html lang="en-US" data-preset="contrast" data-primary-color="#307FFF"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><meta charset="UTF-8"><meta name="robots" content="noindex"><meta name="built-on" content="2024-09-30T21:21:54.8604415"><title>Монтирование HDD/SSD | Документация для работы с KUKA iiwa и мультикамерной системой</title><script type="application/json" id="virtual-toc-data">[]</script><script type="application/json" id="topic-shortcuts"></script><link href="https://resources.jetbrains.com/writerside/apidoc/6.10.0-b408/app.css" rel="stylesheet"><link rel="icon" type="image/png" sizes="16x16" href="images/robot-logo.png"><meta name="image" content=""><!-- Open Graph --><meta property="og:title" content="Монтирование HDD/SSD | Документация для работы с KUKA iiwa и мультикамерной системой"><meta property="og:description" content=""><meta property="og:image" content=""><meta property="og:site_name" content="Документация для работы с KUKA iiwa и мультикамерной системой Help"><meta property="og:type" content="website"><meta property="og:locale" content="en_US"><meta property="og:url" content="writerside-documentation/монтирование-hdd-ssd.html"><!-- End Open Graph --><!-- Twitter Card --><meta name="twitter:card" content="summary_large_image"><meta name="twitter:site" content=""><meta name="twitter:title" content="Монтирование HDD/SSD | Документация для работы с KUKA iiwa и мультикамерной системой"><meta name="twitter:description" content=""><meta name="twitter:creator" content=""><meta name="twitter:image:src" content=""><!-- End Twitter Card --><!-- Schema.org WebPage --><script type="application/ld+json">{
+    "@context": "http://schema.org",
+    "@type": "WebPage",
+    "@id": "writerside-documentation/монтирование-hdd-ssd.html#webpage",
+    "url": "writerside-documentation/монтирование-hdd-ssd.html",
+    "name": "Монтирование HDD/SSD | Документация для работы с KUKA iiwa и мультикамерной системой",
+    "description": "",
+    "image": "",
+    "inLanguage":"en-US"
+}</script><!-- End Schema.org --><!-- Schema.org WebSite --><script type="application/ld+json">{
+    "@type": "WebSite",
+    "@id": "writerside-documentation/#website",
+    "url": "writerside-documentation/",
+    "name": "Документация для работы с KUKA iiwa и мультикамерной системой Help"
+}</script><!-- End Schema.org --></head><body data-id="Монтирование-HDD-SSD" data-main-title="Монтирование HDD/SSD" data-article-props="{&quot;seeAlsoStyle&quot;:&quot;links&quot;}" data-template="article" data-breadcrumbs="starter.md|Установка необходимых модулей"><div class="wrapper"><main class="panel _main"><header class="panel__header"><div class="container"><h3>Документация для работы с KUKA iiwa и мультикамерной системой  Help</h3><div class="panel-trigger"></div></div></header><section class="panel__content"><div class="container"><article class="article" data-shortcut-switcher="inactive"><h1 data-toc="Монтирование-HDD-SSD" id="Монтирование-HDD-SSD.md">Монтирование HDD/SSD</h1><p id="f5c43g_3">Если ваш жесткий диск постоянно требует монтирования при работе в Ubuntu, это может быть связано с тем, что он не настроен для автоматического монтирования при загрузке системы. Чтобы настроить автоматическое монтирование диска, вы можете использовать файл <code class="code" id="f5c43g_19">/etc/fstab</code>.</p><p id="f5c43g_4">Определим UUID диска, для этого выполним команду:</p><div class="code-block" data-lang="bash">
+sudo blkid
+
+# Output(example)
+/dev/nvme0n1p2: UUID=&quot;a433bb63-1b12-4cc1-86d0-7b19ae0d51fd&quot; BLOCK_SIZE=&quot;4096&quot; TYPE=&quot;ext4&quot; PARTUUID=&quot;c79d9691-6086-4491-a788-18f54d51057f&quot;
+/dev/loop1: TYPE=&quot;squashfs&quot;
+/dev/nvme0n1p1: UUID=&quot;DBC9-8460&quot; BLOCK_SIZE=&quot;512&quot; TYPE=&quot;vfat&quot; PARTLABEL=&quot;EFI System Partition&quot; PARTUUID=&quot;cc9c0d8e-f1a7-4ba8-93ce-c3f81444edb8&quot;
+/dev/loop6: TYPE=&quot;squashfs&quot;
+/dev/loop4: TYPE=&quot;squashfs&quot;
+/dev/loop2: TYPE=&quot;squashfs&quot;
+/dev/loop0: TYPE=&quot;squashfs&quot;
+/dev/loop7: TYPE=&quot;squashfs&quot;
+/dev/sda: LABEL=&quot;/home&quot; UUID=&quot;2bf4877e-7c74-4bb7-b6ca-2ab2861412e5&quot; BLOCK_SIZE=&quot;4096&quot; TYPE=&quot;ext4&quot;
+/dev/loop5: TYPE=&quot;squashfs&quot;
+/dev/loop3: TYPE=&quot;squashfs&quot;
+</div><p id="f5c43g_6">Выберите место, где вы хотите монтировать диск. Например, <code class="code" id="f5c43g_20">/mnt/bigdata_disk</code></p><div class="code-block" data-lang="bash">
+sudo mkdir -p /mnt/bigdata_disk
+</div><p id="f5c43g_8">Откройте файл <code class="code" id="f5c43g_21">/etc/fstab</code> в текстовом редакторе с правами суперпользователя:</p><div class="code-block" data-lang="bash">
+sudo nano /etc/fstab
+</div><p id="f5c43g_10">Добавьте новую строку в конец файла, используя следующий формат:</p><div class="code-block" data-lang="none">
+UUID=ваш_UUID /mnt/mydisk тип_файловой_системы опции 0 2
+</div><p id="f5c43g_12">Например, если ваш UUID <code class="code" id="f5c43g_22">1234-5678</code> и тип файловой системы <code class="code" id="f5c43g_23">ext4</code>, строка будет выглядеть так:</p><div class="code-block" data-lang="none">
+UUID=1234-5678 /mnt/bigdata_disk ext4 defaults 0 2
+</div><p id="f5c43g_14">Сохраните изменения и закройте редактор. В <span class="control" id="f5c43g_24">nano</span> нажмите <span class="control" id="f5c43g_25">Ctrl+O</span> для сохранения и <span class="control" id="f5c43g_26">Ctrl+X</span> для выхода.</p><p id="f5c43g_15">Выполните команду:</p><div class="code-block" data-lang="bash">
+sudo mount -a
+</div><p id="f5c43g_17">Если команда выполнена без ошибок, диск будет автоматически монтироваться при следующей загрузке системы.</p><p id="f5c43g_18">Теперь ваш жесткий диск должен автоматически монтироваться при загрузке Ubuntu. Если у вас возникнут проблемы, убедитесь, что UUID и тип файловой системы указаны правильно.</p><div class="last-modified">Last modified: 30 сентября 2024</div><div data-feedback-placeholder="true"></div><div class="navigation-links _bottom"><a href="install-ubuntu.html" class="navigation-links__prev">Установка Ubuntu</a><a href="настройка-ubuntu-сервера.html" class="navigation-links__next">Настройка Ubuntu сервера</a></div></article><div id="disqus_thread"></div></div></section></main></div><script src="https://resources.jetbrains.com/writerside/apidoc/6.10.0-b408/app.js"></script></body></html>

@@ -1,23 +1,7 @@
-FROM registry.jetbrains.team/p/writerside/builder/writerside-builder:242.21870 as build
+FROM httpd:2.4 AS http-server
 
-ARG INSTANCE=Writerside/hi
+COPY ./documentation/ /usr/local/apache2/htdocs/
 
-RUN mkdir /opt/sources
+EXPOSE 80
 
-WORKDIR /opt/sources
-
-ADD Writerside ./Writerside
-
-RUN export DISPLAY=:99 && \
-Xvfb :99 & \
-/opt/builder/bin/idea.sh helpbuilderinspect -source-dir /opt/sources --product $INSTANCE --runner other --output-dir /opt/wrs-output/
-
-WORKDIR /opt/wrs-output
-
-RUN unzip -O UTF-8 webHelpHI2-all.zip -d /opt/wrs-output/unzipped-artifact
-
-FROM httpd:2.4 as http-server
-
-COPY --from=build /opt/wrs-output/unzipped-artifact/ /usr/local/apache2/htdocs/
-
-CMD ["help-website"]
+CMD ["httpd-foreground"]

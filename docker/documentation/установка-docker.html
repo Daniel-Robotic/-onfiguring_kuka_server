@@ -1,0 +1,65 @@
+<!DOCTYPE html SYSTEM "about:legacy-compat">
+<html lang="en-US" data-preset="contrast" data-primary-color="#307FFF"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><meta charset="UTF-8"><meta name="robots" content="noindex"><meta name="built-on" content="2024-09-30T21:21:54.8604415"><title>Установка Docker | Документация для работы с KUKA iiwa и мультикамерной системой</title><script type="application/json" id="virtual-toc-data">[{"id":"docker-ansible","level":0,"title":"Установка Docker с использованием ansible","anchor":"#docker-ansible"}]</script><script type="application/json" id="topic-shortcuts"></script><link href="https://resources.jetbrains.com/writerside/apidoc/6.10.0-b408/app.css" rel="stylesheet"><link rel="icon" type="image/png" sizes="16x16" href="images/robot-logo.png"><meta name="image" content=""><!-- Open Graph --><meta property="og:title" content="Установка Docker | Документация для работы с KUKA iiwa и мультикамерной системой"><meta property="og:description" content=""><meta property="og:image" content=""><meta property="og:site_name" content="Документация для работы с KUKA iiwa и мультикамерной системой Help"><meta property="og:type" content="website"><meta property="og:locale" content="en_US"><meta property="og:url" content="writerside-documentation/установка-docker.html"><!-- End Open Graph --><!-- Twitter Card --><meta name="twitter:card" content="summary_large_image"><meta name="twitter:site" content=""><meta name="twitter:title" content="Установка Docker | Документация для работы с KUKA iiwa и мультикамерной системой"><meta name="twitter:description" content=""><meta name="twitter:creator" content=""><meta name="twitter:image:src" content=""><!-- End Twitter Card --><!-- Schema.org WebPage --><script type="application/ld+json">{
+    "@context": "http://schema.org",
+    "@type": "WebPage",
+    "@id": "writerside-documentation/установка-docker.html#webpage",
+    "url": "writerside-documentation/установка-docker.html",
+    "name": "Установка Docker | Документация для работы с KUKA iiwa и мультикамерной системой",
+    "description": "",
+    "image": "",
+    "inLanguage":"en-US"
+}</script><!-- End Schema.org --><!-- Schema.org WebSite --><script type="application/ld+json">{
+    "@type": "WebSite",
+    "@id": "writerside-documentation/#website",
+    "url": "writerside-documentation/",
+    "name": "Документация для работы с KUKA iiwa и мультикамерной системой Help"
+}</script><!-- End Schema.org --></head><body data-id="Установка-Docker" data-main-title="Установка Docker" data-article-props="{&quot;seeAlsoStyle&quot;:&quot;links&quot;}" data-template="article" data-breadcrumbs="starter.md|Установка необходимых модулей///Настройка-Ubuntu-сервера.md|Настройка Ubuntu сервера"><div class="wrapper"><main class="panel _main"><header class="panel__header"><div class="container"><h3>Документация для работы с KUKA iiwa и мультикамерной системой  Help</h3><div class="panel-trigger"></div></div></header><section class="panel__content"><div class="container"><article class="article" data-shortcut-switcher="inactive"><h1 data-toc="Установка-Docker" id="Установка-Docker.md">Установка Docker</h1><p id="z2frn1l_3">Docker - программная платформа для разработки, доставки и запуска контейнерных приложений. Она позволяет создавать контейнеры, автоматизировать их запуск и развёртывание, управляет жизненным циклом.</p><p id="z2frn1l_4">Для установки Docker Engine вам потребуется 64-разрядная версия одной из следующих версий Ubuntu:</p><ul class="list _bullet" id="z2frn1l_5"><li class="list__item" id="z2frn1l_8"><p>Ubuntu Noble 24.04 (LTS)</p></li><li class="list__item" id="z2frn1l_9"><p>Ubuntu Jammy 22.04 (LTS)</p></li><li class="list__item" id="z2frn1l_10"><p>Ubuntu Focal 20.04 (LTS)</p></li></ul><p id="z2frn1l_6">По скольку у нас имеется ansible, установка Docker возможна с использованием пары команд. Также имеется возможность установки полностью в ручном режиме.</p><section class="chapter"><h2 id="docker-ansible" data-toc="docker-ansible">Установка Docker с использованием ansible</h2><p id="z2frn1l_11">Для автоматической установки docker необходимо скачать готовый репозиторий с конфигурациями, для этого выполните следующие команды:</p><div class="code-block" data-lang="bash">
+sudo apt install git -y  # Если не установлен
+git clone https://github.com/Daniel-Robotic/configuring_kuka_server.git
+</div><p id="z2frn1l_13">Далее необходимо отредактировать файл <code class="code" id="z2frn1l_30">host.ini</code>:</p><div class="code-block" data-lang="bash">
+nano configuring_kuka_server/ansible/hosts.ini
+</div><p id="z2frn1l_15">В нем содержиться следующая информация:</p><div class="code-block" data-lang="none">
+[server]
+ubuntu_server ansible_host=127.0.0.1 ansible_port=22 ansible_user=user ansible_ssh_private_key_file=/home/user/.ssh/id_rsa
+
+[jetson_nx]
+jetson_left_wall ansible_host=127.0.0.1 ansible_port=22 ansible_user=user ansible_ssh_private_key_file=/home/user/.ssh/id_rsa&gt;
+jetson_front_wall ansible_host=127.0.0.1 ansible_port=22 ansible_user=user ansible_ssh_private_key_file=/home/user/.ssh/id_rsa&gt;
+jetson_lidar ansible_host=127.0.0.1 ansible_port=22 ansible_user=user ansible_ssh_private_key_file=/home/user/.ssh/id_rsa&gt;
+
+[jetson_nano]
+jetson_kuka_tcp ansible_host=127.0.0.1 ansible_port=22 ansible_user=user ansible_ssh_private_key_file=/home/user/.ssh/id_rsa&gt;
+jetson_ceiling ansible_host=127.0.0.1 ansible_port=22 ansible_user=user ansible_ssh_private_key_file=/home/user/.ssh/id_rsa&gt;
+</div><p id="z2frn1l_17">В <code class="code" id="z2frn1l_31">[server]</code>, замените ися пользователя хоста системы <code class="code" id="z2frn1l_32">ansible_user=user</code>, а также укажите путь до ключа <code class="code" id="z2frn1l_33">ssh</code></p><aside class="prompt" data-type="tip" data-title="" id="z2frn1l_18"><p id="z2frn1l_34">Для генерации <code class="code" id="z2frn1l_35">ssh</code> ключа воспользуйтесь на хостовой машине командой <code class="code" id="z2frn1l_36">ssh-keygen</code>, и выполните пункты, как было описано в <a href="настройка-подключения-к-ubuntu-серверу-по-ssh-в-windows.html" id="z2frn1l_37" data-tooltip="Подключение по ssh к Ubuntu серверу в Windows возможно двумя способами:">Подключение с использованием командной строки Windows</a></p></aside><aside class="prompt" data-type="note" data-title="" id="z2frn1l_19"><p id="z2frn1l_38">Вы также можете авторизироваться при помощи пароля, бля этого уберите <code class="code" id="z2frn1l_39">ansible_ssh_private_key_file</code> и замените его на <code class="code" id="z2frn1l_40">ansible_password=ваш_пароль</code></p></aside><p id="z2frn1l_20">Далее запустить <code class="code" id="z2frn1l_41">ansible-playbook</code>, для этого воспользуйтесь командой:</p><div class="code-block" data-lang="bash">
+ansible-playbook -i ./configuring_kuka_server/ansible/hosts.ini ./configuring_kuka_server/ansible/docker-server-install-playbook.yml
+</div><p id="z2frn1l_22">В начале выполнения вы должны получить три ошибки, а также в конце будет выведен результат работы <code class="code" id="z2frn1l_42">ansible</code>:</p><div class="code-block" data-lang="bash">
+PLAY RECAP *************************************************************************************************************
+jetson_front_wall          : ok=0    changed=0    unreachable=1    failed=0    skipped=0    rescued=0    ignored=0
+jetson_left_wall           : ok=0    changed=0    unreachable=1    failed=0    skipped=0    rescued=0    ignored=0
+jetson_lidar               : ok=0    changed=0    unreachable=1    failed=0    skipped=0    rescued=0    ignored=0
+ubuntu_server              : ok=13   changed=5    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+</div><p id="z2frn1l_24">Важно чтобы <code class="code" id="z2frn1l_43">ubuntu</code> сервер выполнился без ошибок.</p><p id="z2frn1l_25">Убедитесь, что вы можете выполнять команды <code class="code" id="z2frn1l_44">docker</code> без <code class="code" id="z2frn1l_45">sudo</code>:</p><div class="code-block" data-lang="bash">
+docker run hello-world
+</div><p id="z2frn1l_27">Эта команда загружает тестовый образ и запускает его в контейнере. Когда контейнер запускается, он выводит сообщение и завершает работу.</p><p id="z2frn1l_28">Более подробно, про работу с инструментом <code class="code" id="z2frn1l_46">ansible</code> можно прочитать <a href="ansible.html" id="z2frn1l_47" data-tooltip="Start typing here...">тут</a></p><section class="chapter"><h3 id="apt" data-toc="apt">Установка с помощью репозитория apt</h3><p id="z2frn1l_48">Прежде чем впервые установить Docker Engine на новый хост-компьютер, необходимо настроить репозиторий Docker. После этого вы можете установить и обновить Docker из репозитория.</p><p id="z2frn1l_49">Настройте репозиторий <code class="code" id="z2frn1l_59">apt</code> в Docker:</p><div class="code-block" data-lang="bash">
+# Add Docker's official GPG key:
+sudo apt-get update
+sudo apt-get install ca-certificates curl
+sudo install -m 0755 -d /etc/apt/keyrings
+sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+sudo chmod a+r /etc/apt/keyrings/docker.asc
+
+# Add the repository to Apt sources:
+echo \
+  &quot;deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+  $(. /etc/os-release &amp;&amp; echo &quot;$VERSION_CODENAME&quot;) stable&quot; | \
+  sudo tee /etc/apt/sources.list.d/docker.list &gt; /dev/null
+sudo apt-get update
+</div><aside class="prompt" data-type="note" data-title="" id="z2frn1l_51"><p id="z2frn1l_60">Если вы используете дистрибутив, производный от Ubuntu, такой как Linux Mint, вам, возможно, придется использовать <code class="code" id="z2frn1l_61">UBUNTU_CODENAME</code> вместо <code class="code" id="z2frn1l_62">VERSION_CODENAME</code>.</p></aside><p id="z2frn1l_52">Чтобы установить последнюю версию, выполните:</p><div class="code-block" data-lang="bash">
+sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+</div><p id="z2frn1l_54">Далее необходимо настроить группу пользователей. Чтобы создать группу <code class="code" id="z2frn1l_63">Docker</code> и добавить пользователя, выполните следующие действия:</p><div class="code-block" data-lang="bash">
+sudo groupadd docker
+sudo usermod -aG docker $USER
+sudo systemctl restart docker
+</div><p id="z2frn1l_56">Убедитесь, что вы можете выполнять команды <code class="code" id="z2frn1l_64">docker</code> без <code class="code" id="z2frn1l_65">sudo</code>:</p><div class="code-block" data-lang="bash">
+docker run hello-world
+</div><p id="z2frn1l_58">Эта команда загружает тестовый образ и запускает его в контейнере. Когда контейнер запускается, он выводит сообщение и завершает работу.</p></section></section><div class="last-modified">Last modified: 30 сентября 2024</div><div data-feedback-placeholder="true"></div><div class="navigation-links _bottom"><a href="установка-ansible.html" class="navigation-links__prev">Установка Ansible</a><a href="вспомогательные-инструменты-для-работы-с-системой.html" class="navigation-links__next">Вспомогательные инструменты для работы с системой</a></div></article><div id="disqus_thread"></div></div></section></main></div><script src="https://resources.jetbrains.com/writerside/apidoc/6.10.0-b408/app.js"></script></body></html>
