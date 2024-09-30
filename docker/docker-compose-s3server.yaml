@@ -76,6 +76,20 @@ services:
               count: all
               capabilities: [gpu]
 
+  documentation:
+    container_name: documentation
+    build:
+      context: .
+      dockerfile: Doc_Dockerfile
+    ports:
+      - 8082:80
+    networks:
+      s3network:
+        ipv4_address: 172.45.15.6
+
+
+
+
 networks:
   s3network:
     driver: bridge
