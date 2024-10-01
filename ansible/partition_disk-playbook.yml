@@ -5,7 +5,7 @@
   vars: 
     - partitial_name: nvme0n1
     - partitial_dev: nvme0n1p1
-    - data_path: /home/user/configuring_kuka_server/ansible/data
+    - data_path: /home/user/configuring_kuka_server/ansible
 
   tasks:
     - name: Разметка диска
@@ -51,57 +51,38 @@
 
     - name: Перенос данных на диск
       block:
-        - name: Монтирование файловой системы
-          mount:
-            path: /mnt
-            src: "/dev/{{ partitial_dev }}"
-            fstype: auto
-            state: mounted
-
-        - name: Перенос данных
-          command:
-            cmd: rsync -axHAWX --numeric-ids --info=progress2 --exclude={"/dev/","/proc/","/sys/","/tmp/","/run/","/mnt/","/media/*","/lost+found"} / /mnt
-          args:
-            creates: /mnt
-        
-        - name: Copy setssdroot.service to /etc/systemd/system
-          copy:
-            src:  "{{ data_path }}/setssdroot.service"
-            dest: /etc/systemd/system/setssdroot.service
-            mode: '0644'
-
-        - name: Copy setssdroot.sh to /sbin
-          copy:
-            src: "{{ data_path }}/setssdroot.sh"
-            dest: /sbin/setssdroot.sh
-            mode: '0777'
-
-        - name: Reload systemd daemon
-          systemd:
-            daemon_reload: yes
-
-        - name: Enable setssdroot.service
-          systemd:
-            name: setssdroot.service
-            enabled: yes
-
-        - name: Copy setssdroot.service to /mnt/etc/systemd/system
-          copy:
-            src: /etc/systemd/system/setssdroot.service
-            dest: /mnt/etc/systemd/system/setssdroot.service
-            mode: '0644'
-            remote_src: yes
-
-        - name: Copy setssdroot.sh to /mnt/sbin
-          copy:
-            src: /sbin/setssdroot.sh
-            dest: /mnt/sbin/setssdroot.sh
-            mode: '0777'
-            remote_src: yes
-
-        - name: Create setssdroot.conf file
+        - name: Создание дирректории /rootOnNVMe
           file:
-            path: /etc/setssdroot.conf
-            state: touch
-            mode: '0644'
-      become: yes
+            path: /rootOnNVMe
+            state: directory
+            mode: '0755'
+
+        - name: Копирование setup-service.sh в директорию /rootOnNVMe
+          copy:
+            src: "{{ data_path }}/copy-rootfs-ssd.sh"
+            dst: /rootOnNVMe/setup-service.sh
+            mode: '0755'
+          
+        - name: Копирование copy-rootfs-ssd.sh в директорию /rootOnNVMe
+          copy:
+            src: "{{ data_path }}/copy-rootfs-ssd.sh"
+            dst: /rootOnNVMe/copy-rootfs-ssd.sh
+            mode: '0755'
+
+        - name: Копирование data/ в директорию /rootOnNVMe
+          copy:
+            src: "{{ data_path }}/data/"
+            dest: /rootOnNVMe/data
+            mode: '0755'
+
+        - name: Запуск скрипта copy-rootfs-ssdю.sh
+          command:
+            cmd: /rootOnNVMe/copy-rootfs-ssd.sh
+          args:
+            chdir: /rootOnNVMe
+
+        - name: Запуск скрипта setup-service.sh
+          command:
+            cmd: /rootOnNVMe/setup-service.sh
+          args:
+            chdir: /rootOnNVMe
