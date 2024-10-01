@@ -69,14 +69,12 @@
             src:  "{{ data_path }}/setssdroot.service"
             dest: /etc/systemd/system/setssdroot.service
             mode: '0644'
-            remote_src: yes
 
         - name: Copy setssdroot.sh to /sbin
           copy:
             src: "{{ data_path }}/setssdroot.sh"
             dest: /sbin/setssdroot.sh
             mode: '0777'
-            remote_src: yes
 
         - name: Reload systemd daemon
           systemd:
@@ -92,12 +90,14 @@
             src: /etc/systemd/system/setssdroot.service
             dest: /mnt/etc/systemd/system/setssdroot.service
             mode: '0644'
+            remote_src: yes
 
         - name: Copy setssdroot.sh to /mnt/sbin
           copy:
             src: /sbin/setssdroot.sh
             dest: /mnt/sbin/setssdroot.sh
             mode: '0777'
+            remote_src: yes
 
         - name: Create setssdroot.conf file
           file:
