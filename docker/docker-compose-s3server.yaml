@@ -56,6 +56,7 @@ services:
     runtime: nvidia
     ports:
       - "8081:8888"
+      - "8082:6006"
     volumes:
       - ai_dev_folder:/workspace
     networks:
@@ -82,7 +83,7 @@ services:
       context: .
       dockerfile: Doc_Dockerfile
     ports:
-      - 8082:80
+      - 8083:80
     networks:
       s3network:
         ipv4_address: 172.45.15.6

@@ -23,6 +23,7 @@ RUN apt-get update && apt-get install -y \
     libgl1-mesa-dev \ 
     libglu1-mesa-dev \ 
     at \
+    supervizor \
     && rm -rf /var/lib/apt/lists/*
 
 # Устанавливаем Python и pip
@@ -53,7 +54,9 @@ WORKDIR /workspace
 COPY jupyter_notebook_config.py /root/.jupyter/jupyter_notebook_config.py
 
 # Открываем порты для Jupyter Server
-EXPOSE 8888
+EXPOSE 8888 6006
+
+COPY ./supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 # Запускаем Jupyter Server
-CMD ["jupyter", "notebook"]
+CMD ["/usr/bin/supervisord"]
