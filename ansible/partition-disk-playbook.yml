@@ -60,7 +60,7 @@
         - name: Копирование setup-service.sh в директорию /rootOnNVMe
           copy:
             src: "{{ data_path }}/copy-rootfs-ssd.sh"
-            dst: /rootOnNVMe/setup-service.sh
+            dest: /rootOnNVMe/setup-service.sh
             mode: '0755'
           
         - name: Копирование copy-rootfs-ssd.sh в директорию /rootOnNVMe
@@ -75,7 +75,7 @@
             dest: /rootOnNVMe/data
             mode: '0755'
 
-        - name: Запуск скрипта copy-rootfs-ssdю.sh
+        - name: Запуск скрипта copy-rootfs-ssd.sh
           command:
             cmd: /rootOnNVMe/copy-rootfs-ssd.sh
           args:
