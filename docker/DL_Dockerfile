@@ -34,12 +34,12 @@ RUN pip3 install \
     numpy \
     pandas \
     scikit-learn \
-    tensorflow-gpu \
     torch \
     torchvision \
     torchaudio \
     pytorch-lightning \
     torchmetrics \
+    tensorboard \
     opencv-contrib-python \
     pyrealsense2 \
     jupyter
