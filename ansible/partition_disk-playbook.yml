@@ -1,0 +1,105 @@
+---
+- name: Разметка и перенос данных SSD диск
+  hosts: [jetson_nx]
+  become: yes
+  vars: 
+    - partitial_name: nvme0n1
+    - partitial_dev: nvme0n1p1
+    - data_path: /home/user/configuring_kuka_server/ansible/data
+
+  tasks:
+    - name: Разметка диска
+      block:
+        - name: Установка рекомендованных пакетов
+          apt:
+            name:
+              - parted
+              - e2fsprogs
+            state: present
+          
+        - name: Создание нового раздела
+          parted:
+            device: /dev/{{ partitial_name }}
+            number: 1
+            state: present
+            part_start: 0%
+            part_end: 100%
+          
+        - name: Создание файловой системы раздела
+          filesystem:
+            fstype: ext4
+            dev: /dev/{{ partitial_dev }}
+
+        - name: Создание точки монтирования
+          file:
+            path: /mnt/{{ partitial_dev }}
+            state: directory
+
+        - name: Монтирование раздела
+          mount:
+            path: /mnt/{{ partitial_dev }}
+            src: /dev/{{ partitial_dev }}
+            fstype: ext4
+            state: mounted
+
+        - name: Добавление раздела в fstab
+          lineinfile:
+          path: /etc/fstab
+          line: '/dev/{{ partitial_dev }} /mnt/{{ partitial_dev }} ext4 defaults 0 2'
+          state: present
+
+    - name: Перенос данных на диск
+      block:
+        - name: Монтирование файловой системы
+          mount:
+            path: /mnt
+            src: /dev/{{ partitial_dev }}
+            fstype: auto
+            state: mounted
+
+        - name: Перенос данных
+          command:
+            cmd: rsync -axHAWX --numeric-ids --info=progress2 --exclude={"/dev/","/proc/","/sys/","/tmp/","/run/","/mnt/","/media/*","/lost+found"} / /mnt
+          args:
+            creates: /mnt
+        
+        - name: Copy setssdroot.service to /etc/systemd/system
+          copy:
+            src:  {{ data_path }}/setssdroot.service
+            dest: /etc/systemd/system/setssdroot.service
+            mode: '0644'
+            remote_src: yes
+
+        - name: Copy setssdroot.sh to /sbin
+          copy:
+            src: {{ data_path }}/setssdroot.sh
+            dest: /sbin/setssdroot.sh
+            mode: '0777'
+            remote_src: yes
+
+        - name: Reload systemd daemon
+          systemd:
+            daemon_reload: yes
+
+        - name: Enable setssdroot.service
+          systemd:
+            name: setssdroot.service
+            enabled: yes
+
+        - name: Copy setssdroot.service to /mnt/etc/systemd/system
+          copy:
+            src: /etc/systemd/system/setssdroot.service
+            dest: /mnt/etc/systemd/system/setssdroot.service
+            mode: '0644'
+
+        - name: Copy setssdroot.sh to /mnt/sbin
+          copy:
+            src: /sbin/setssdroot.sh
+            dest: /mnt/sbin/setssdroot.sh
+            mode: '0777'
+
+        - name: Create setssdroot.conf file
+          file:
+            path: /etc/setssdroot.conf
+            state: touch
+            mode: '0644'
