@@ -1,6 +1,6 @@
 ---
 - name: Разметка и перенос данных SSD диск
-  hosts: [jetson_nx]
+  hosts: jetson_nx
   become: yes
   vars: 
     - partitial_name: nvme0n1

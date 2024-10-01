@@ -1,0 +1,41 @@
+---
+- name: Установка и Jetson Stats
+  hosts: jetson_nx
+  become: yes
+  tasks:
+    - name: Обновление пакетов
+      apt:
+        update_cache: yes
+
+    - name: Установка NVIDIA JetPack
+      apt:
+        name: nvidia-jetpack
+        state: present
+
+    - name: Добавление CUDA PATH в .bashrc
+      lineinfile:
+        path: ~/.bashrc
+        line: 'export PATH=/usr/local/cuda/bin:$PATH'
+        create: yes
+
+    - name: Добавление CUDA LD_LIBRARY_PATH в .bashrc
+      lineinfile:
+        path: ~/.bashrc
+        line: 'export LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH'
+        create: yes
+
+    - name: Установка python3 pip и dev
+      apt:
+        name:
+          - python3-pip
+          - python3-dev
+        state: present
+
+    - name: Обновление pip
+      command:
+        cmd: python3 -m pip install --upgrade pip
+
+    - name: Установка Jetson Stats
+      pip:
+        name: jetson-stats
+        executable: pip3
