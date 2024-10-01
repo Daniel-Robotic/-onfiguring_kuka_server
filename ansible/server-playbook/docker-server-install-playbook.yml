@@ -1,8 +1,7 @@
 ---
 
-# TODO: Проверить работу на Jetson
 - name: Установка Docker и Docker-Compose на сервер
-  hosts: [server, jetson_nx]
+  hosts: server
 
   tasks:
     - name: Добавление официального GPG-ключа Docker

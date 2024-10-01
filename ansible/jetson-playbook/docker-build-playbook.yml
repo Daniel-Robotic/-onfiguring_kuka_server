@@ -1,6 +1,6 @@
 ---
 - name: Сборка Docker-Compose с последующим запуском
-  hosts: [jetson_nx]
+  hosts: jetson_nx
   become: yes
   vars: 
     - main_user: user

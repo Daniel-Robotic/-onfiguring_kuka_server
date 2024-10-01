@@ -1,0 +1,87 @@
+---
+
+- name: Установка Docker и Docker-Compose на сервер
+  hosts: jetson_nx
+
+  tasks:
+    - name: Добавление официального GPG-ключа Docker
+      block:
+        - name: Обновление пакетов
+          apt:
+            update_cache: yes
+
+        - name: Установка рекомендуемых пакетов
+          apt:
+            name:
+              - apt-transport-https 
+              - ca-certificates
+              - curl 
+              - gnupg 
+              - lsb-release
+            update_cache: yes
+            state: present
+          
+        - name: Создание каталога для связок ключей apt
+          file:
+            path: /etc/apt/keyrings
+            state: directory
+            mode: "0755"
+
+        - name: Установка Docker GPG key
+          get_url:
+            url: https://download.docker.com/linux/ubuntu/gpg
+            dest: /etc/apt/keyrings/docker.asc
+            mode: "0644"
+
+        - name: "Устанавливаем файл Docker GPG на чтение"
+          file:
+            path: /etc/apt/keyrings/docker.asc
+            mode: "0644"
+      become: yes
+
+    - name: Добавление официального репозитория в APT
+      block:
+        - name: Добавление Docker репозитория
+          shell: echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo \"$VERSION_CODENAME\") stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+          args:
+            executable: /bin/bash
+
+        - name: Обновление пакетов
+          apt:
+            update_cache: yes
+      become: yes
+
+    - name: Установка Docker и Docker-Compose
+      block:
+        - name: Установка пакетов
+          apt:
+            name:
+              - docker-ce
+              - docker-ce-cli
+              - containerd.io
+              - docker-buildx-plugin
+              - docker-compose-plugin
+      become: yes
+
+    - name: Завершение установки Docker
+      block:
+        - name: Получение имени пользователя
+          command: echo "$USER"
+          register: USER
+
+        - debug: msg={{USER.stdout}}
+
+        - name: Добавление пользователя в группу
+          user:
+            user: "{{ USER.stdout }}"
+            group: docker
+
+        - name: Перезапуск демона docker
+          systemd:
+            name: docker
+            state: restarted
+
+      become: yes
+
+
+

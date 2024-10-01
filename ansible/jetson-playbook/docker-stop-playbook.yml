@@ -1,9 +1,9 @@
 ---
 - name: Остановка Docker-Compose
-  hosts: [jetson_nx]
+  hosts: jetson_nx
   become: yes
   vars: 
-    - main_user: ros
+    - main_user: user
     - main_dir: ros2_calibration_ws
     - docker_compose_file: "/home/{{ main_user }}/{{ main_dir }}/docker-compose.yaml"
 

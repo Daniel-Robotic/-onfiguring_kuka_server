@@ -5,7 +5,7 @@
   vars: 
     - partitial_name: nvme0n1
     - partitial_dev: nvme0n1p1
-    - data_path: /home/user/configuring_kuka_server/ansible
+    - data_path: /home/user/configuring_kuka_server/ansible/jetson-playbook/partitial-config
 
   tasks:
     - name: Разметка диска
