@@ -47,6 +47,7 @@
             path: /etc/fstab
             line: '/dev/{{ partitial_dev }} /mnt/{{ partitial_dev }} ext4 defaults 0 2'
             state: present
+      become: yes
 
     - name: Перенос данных на диск
       block:
@@ -103,3 +104,4 @@
             path: /etc/setssdroot.conf
             state: touch
             mode: '0644'
+      become: yes
