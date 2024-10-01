@@ -23,7 +23,7 @@ RUN apt-get update && apt-get install -y \
     libgl1-mesa-dev \ 
     libglu1-mesa-dev \ 
     at \
-    supervizor \
+    supervisor \
     && rm -rf /var/lib/apt/lists/*
 
 # Устанавливаем Python и pip
