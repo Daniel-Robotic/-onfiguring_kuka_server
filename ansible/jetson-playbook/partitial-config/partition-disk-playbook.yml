@@ -3,51 +3,51 @@
   hosts: jetson_nx
   become: yes
   vars: 
-    - partitial_name: nvme0n1
-    - partitial_dev: nvme0n1p1
+    - disk: /dev/nvme0n1
+    - mount_point: /mnt/ssd
     - data_path: /home/user/configuring_kuka_server/ansible/jetson-playbook/partitial-config
 
   tasks:
     - name: Разметка диска
       block:
-        - name: Установка рекомендованных пакетов
-          apt:
-            name:
-              - parted
-              - e2fsprogs
-            state: present
-          
-        - name: Создание нового раздела
-          parted:
-            device: "/dev/{{ partitial_name }}"
-            number: 1
-            state: present
-            part_start: 0%
-            part_end: 100%
-          
-        - name: Создание файловой системы раздела
-          filesystem:
-            fstype: ext4
-            dev: "/dev/{{ partitial_dev }}"
+        - name: Ensure the disk is present
+          command: lsblk {{ disk }}
+          register: disk_check
+          failed_when: disk_check.rc != 0
 
-        - name: Создание точки монтирования
+        - name: Create a new GPT partition table
+          command: parted -s {{ disk }} mklabel gpt
+
+        - name: Create a new primary partition using the entire disk
+          command: parted -s {{ disk }} mkpart primary 0% 100%
+
+        - name: Set the partition type to Linux
+          command: parted -s {{ disk }} set 1 linux on
+
+        - name: Create an Ext4 filesystem on the partition
+          command: mkfs.ext4 {{ disk }}1
+
+        - name: Create the mount point
           file:
-            path: "/mnt/{{ partitial_dev }}"
+            path: "{{ mount_point }}"
             state: directory
 
-        - name: Монтирование раздела
+        - name: Mount the partition
           mount:
-            path: "/mnt/{{ partitial_dev }}"
-            src: "/dev/{{ partitial_dev }}"
+            path: "{{ mount_point }}"
+            src: "{{ disk }}1"
             fstype: ext4
             state: mounted
 
-        - name: Добавление раздела в fstab
+        - name: Get the UUID of the partition
+          command: blkid -s UUID -o value {{ disk }}1
+          register: partition_uuid
+
+        - name: Add the partition to /etc/fstab
           lineinfile:
             path: /etc/fstab
-            line: '/dev/{{ partitial_dev }} /mnt/{{ partitial_dev }} ext4 defaults 0 2'
+            line: "UUID={{ partition_uuid.stdout }} {{ mount_point }} ext4 defaults 0 2"
             state: present
-      become: yes
 
     - name: Перенос данных на диск
       block:
