@@ -21,11 +21,8 @@
         - name: Create a new primary partition using the entire disk
           command: parted -s {{ disk }} mkpart primary 0% 100%
 
-        - name: Set the partition type to Linux
-          command: parted -s {{ disk }} set 1 linux on
-
         - name: Create an Ext4 filesystem on the partition
-          command: mkfs.ext4 {{ disk }}1
+          command: mkfs.ext4 {{ disk }}p1
 
         - name: Create the mount point
           file:
@@ -35,12 +32,12 @@
         - name: Mount the partition
           mount:
             path: "{{ mount_point }}"
-            src: "{{ disk }}1"
+            src: "{{ disk }}p1"
             fstype: ext4
             state: mounted
 
         - name: Get the UUID of the partition
-          command: blkid -s UUID -o value {{ disk }}1
+          command: blkid -s UUID -o value {{ disk }}p1
           register: partition_uuid
 
         - name: Add the partition to /etc/fstab
@@ -48,41 +45,4 @@
             path: /etc/fstab
             line: "UUID={{ partition_uuid.stdout }} {{ mount_point }} ext4 defaults 0 2"
             state: present
-
-    - name: Перенос данных на диск
-      block:
-        - name: Создание дирректории /rootOnNVMe
-          file:
-            path: /rootOnNVMe
-            state: directory
-            mode: '0755'
-
-        - name: Копирование setup-service.sh в директорию /rootOnNVMe
-          copy:
-            src: "{{ data_path }}/copy-rootfs-ssd.sh"
-            dest: /rootOnNVMe/setup-service.sh
-            mode: '0755'
-          
-        - name: Копирование copy-rootfs-ssd.sh в директорию /rootOnNVMe
-          copy:
-            src: "{{ data_path }}/copy-rootfs-ssd.sh"
-            dest: /rootOnNVMe/copy-rootfs-ssd.sh
-            mode: '0755'
-
-        - name: Копирование data/ в директорию /rootOnNVMe
-          copy:
-            src: "{{ data_path }}/data/"
-            dest: /rootOnNVMe/data
-            mode: '0755'
-
-        - name: Запуск скрипта copy-rootfs-ssd.sh
-          command:
-            cmd: /rootOnNVMe/copy-rootfs-ssd.sh
-          args:
-            chdir: /rootOnNVMe
-
-        - name: Запуск скрипта setup-service.sh
-          command:
-            cmd: /rootOnNVMe/setup-service.sh
-          args:
-            chdir: /rootOnNVMe
+      become: yes
