@@ -66,7 +66,7 @@
         - name: Копирование copy-rootfs-ssd.sh в директорию /rootOnNVMe
           copy:
             src: "{{ data_path }}/copy-rootfs-ssd.sh"
-            dst: /rootOnNVMe/copy-rootfs-ssd.sh
+            dest: /rootOnNVMe/copy-rootfs-ssd.sh
             mode: '0755'
 
         - name: Копирование data/ в директорию /rootOnNVMe
