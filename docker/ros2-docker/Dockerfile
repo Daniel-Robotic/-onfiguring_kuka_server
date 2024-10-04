@@ -1,11 +1,13 @@
 # FROM osrf/ros:foxy-desktop-focal
-FROM arm64v8/foxy-ros-base-focal
+FROM arm64v8/ros:foxy-ros-base-focal
 
 WORKDIR /apps/ros2_ws/
 
 ENV RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
 
 RUN apt-get update && apt-get install -y \
+    git \
+    curl \
     python3-pip \
     ros-foxy-rmw-cyclonedds-cpp \
     && sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list' \
@@ -23,8 +25,8 @@ RUN apt-get update && apt-get install -y \
 #     && sudo rm -r build log src 
     # && /bin/bash -c "source /apps/ros2_ws/install/setup.sh"
 
-RUN /bin/bash -c "source /opt/ros/foxy/setup.bash && colcon build" \
-    && sudo rm -r build log src 
+RUN /bin/bash -c "source /opt/ros/foxy/setup.bash && colcon build"
+    # && sudo rm -r build log src 
 
 CMD ["bash", "-c", "source /apps/ros2_ws/install/setup.bash && ros2 run demo_nodes_cpp talker"]
 # CMD [ "bash", "-c",  "source /apps/ros2_ws/install/setup.bash && ros2 run calibration calibration --ros-args -p image_folder:='/apps/ros2_ws/calibration_images'"]
