@@ -19,15 +19,15 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/* \
     && /bin/bash -c "source /opt/ros/foxy/setup.bash"
 
-# COPY ./ /apps/ros2_ws/
+RUN git clone https://github.com/Daniel-Robotic/jetson-ros-detection.git /apps/ros2_ws/
 
 # RUN /bin/bash -c "source /opt/ros/foxy/setup.bash && colcon build --packages-select calibration_interfaces calibration" \
 #     && sudo rm -r build log src 
     # && /bin/bash -c "source /apps/ros2_ws/install/setup.sh"
 
-RUN /bin/bash -c "source /opt/ros/foxy/setup.bash && colcon build"
-    # && sudo rm -r build log src 
+RUN /bin/bash -c "source /opt/ros/foxy/setup.bash && colcon build" \
+    && sudo rm -r build log src 
 
-CMD ["bash", "-c", "source /apps/ros2_ws/install/setup.bash && ros2 run demo_nodes_cpp talker"]
+CMD ["bash", "-c", "source /apps/ros2_ws/install/setup.bash && ros2 run test_packages talker"]
 # CMD [ "bash", "-c",  "source /apps/ros2_ws/install/setup.bash && ros2 run calibration calibration --ros-args -p image_folder:='/apps/ros2_ws/calibration_images'"]
 # ENTRYPOINT [ "bash", "-c", "source /apps/ros2_ws/install/setup.bash && exec ros2 run test_packages talker" ]
