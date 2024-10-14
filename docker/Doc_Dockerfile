@@ -1,7 +1,22 @@
-FROM httpd:2.4 AS http-server
+FROM jetbrains/writerside-builder:242.21870 as build
 
-COPY ./documentation/ /usr/local/apache2/htdocs/
+ARG INSTANCE=Writerside/in
 
-EXPOSE 80
+WORKDIR /opt/sources
+
+ADD Writerside ./Writerside
+RUN git clone https://github.com/Daniel-Robotic/kuka-config-doc.git
+
+RUN export DISPLAY=:99 && \
+Xvfb :99 & \
+/opt/builder/bin/idea.sh helpbuilderinspect -source-dir /opt/sources/kuka-config-doc --product $INSTANCE --runner other --output-dir /opt/wrs-output/
+
+WORKDIR /opt/wrs-output
+
+RUN unzip -O UTF-8 webHelpHI2-all.zip -d /opt/wrs-output/unzipped-artifact
+
+FROM httpd:2.4 as http-server
+
+COPY --from=build /opt/wrs-output/unzipped-artifact/ /usr/local/apache2/htdocs/
 
 CMD ["httpd-foreground"]
