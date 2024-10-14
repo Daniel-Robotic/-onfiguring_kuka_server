@@ -1,10 +1,9 @@
-FROM jetbrains/writerside-builder:242.21870 as build
+FROM jetbrains/writerside-builder:242.21870 AS build
 
 ARG INSTANCE=Writerside/in
 
 WORKDIR /opt/sources
 
-ADD Writerside ./Writerside
 RUN git clone https://github.com/Daniel-Robotic/kuka-config-doc.git
 
 RUN export DISPLAY=:99 && \
@@ -15,7 +14,7 @@ WORKDIR /opt/wrs-output
 
 RUN unzip -O UTF-8 webHelpHI2-all.zip -d /opt/wrs-output/unzipped-artifact
 
-FROM httpd:2.4 as http-server
+FROM httpd:2.4 AS http-server
 
 COPY --from=build /opt/wrs-output/unzipped-artifact/ /usr/local/apache2/htdocs/
 
