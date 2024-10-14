@@ -12,7 +12,7 @@ Xvfb :99 & \
 
 WORKDIR /opt/wrs-output
 
-RUN unzip -O UTF-8 webHelpHI2-all.zip -d /opt/wrs-output/unzipped-artifact
+RUN unzip -O UTF-8 webHelpIN2-all.zip -d /opt/wrs-output/unzipped-artifact
 
 FROM httpd:2.4 AS http-server
 
